@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gắp Tim</title>
+  <style>
+    :root{
+      --bg1:#fff6fb;
+      --accent:#ff4d8a;
+      --card:#fff;
+      --text:#4a2330;
+      --reveal-bg: rgba(255, 245, 250, 0.9);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--text);background:linear-gradient(180deg,#fff7fb,#fff0f7);}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:22px}
+    .stage{width:1000px;max-width:98vw;background:transparent;border-radius:18px;padding:12px;display:grid;grid-template-columns:1fr 360px;gap:18px;position:relative}
+    .game-area{background:radial-gradient(circle at 18% 10%, #fff, transparent 10%), linear-gradient(180deg,#fff,#fff6fb);border-radius:14px;padding:12px;min-height:560px;box-shadow:0 18px 40px rgba(160,40,90,0.06)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px}
+    .title{font-weight:800;font-size:20px;color:var(--accent)}
+    .score-box{background:linear-gradient(180deg,#fff,#fff3f6);padding:8px 12px;border-radius:12px;display:flex;align-items:center;gap:8px}
+    .score-count{font-weight:800;font-size:18px;color:#8b193f}
+    .playfield{position:relative;border-radius:12px;height:420px;margin-top:8px;overflow:hidden;background:
+      radial-gradient(circle at 10% 90%, rgba(255,255,255,0.7) 0, transparent 12%),
+      linear-gradient(180deg,#fff6fb,#fff0f7);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);}
+    .hint{padding:8px 12px;color:#6a2b3d;font-size:14px}
+    .panel{display:flex;flex-direction:column;gap:12px;padding:12px}
+    .panel .card{background:linear-gradient(180deg,#fff,#fff6fb);border-radius:12px;padding:12px;box-shadow:0 8px 20px rgba(109,20,60,0.04)}
+    .btn{background:linear-gradient(90deg,var(--accent),#ff88b8);border:none;color:white;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer}
+    .btn.secondary{background:linear-gradient(90deg,#ffd6e8,#ffb3d1);color:#7a2842}
+    /* heart */
+    .heart{position:absolute;width:56px;height:56px;transform:translate(-50%,-50%);cursor:pointer;touch-action:none;z-index:3;border-radius:12px;display:flex;align-items:center;justify-content:center}
+    .heart svg{width:100%;height:100%;display:block;pointer-events:none}
+    .heart .token{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font-weight:700;color:white;text-shadow:0 2px 6px rgba(0,0,0,0.18);font-size:14px;pointer-events:none}
+    /* reveal area */
+    .reveal{margin-top:12px;padding:12px;border-radius:12px;background:var(--reveal-bg);min-height:74px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .reveal .slot{font-weight:800;font-size:20px;color:#6c1d3a;min-width:18px;text-align:center;padding:6px 8px;border-radius:8px;background:linear-gradient(180deg,#fff,#ffeef8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7)}
+    /* overlay result */
+    .overlay{position:fixed;inset:0;background:rgba(6,6,6,0.36);display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:all .3s;z-index:9999}
+    .overlay.show{visibility:visible;opacity:1}
+    .result-card{width:90%;max-width:720px;background:linear-gradient(180deg,#fff,#fff8fb);padding:22px;border-radius:14px;text-align:center;box-shadow:0 24px 60px rgba(97,18,45,0.14)}
+    .result-title{font-size:28px;font-weight:900;color:var(--accent);margin-bottom:10px}
+    .result-text{font-size:18px;color:#4d2633;line-height:1.5}
+    .result-actions{margin-top:16px;display:flex;gap:12px;justify-content:center}
+    /* hearts flying effect (when collected) - small style tweak */
+    .collected{pointer-events:none;opacity:0.9}
+    /* fireworks canvas */
+    canvas#fireworks{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:30}
+    @media (max-width:980px){.stage{grid-template-columns:1fr}.panel{order:2}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="stage" id="stage">
+      <div class="game-area">
+        <div class="topbar">
+          <div class="title">Gắp Tim</div>
+          <div class="score-box">Gắp: <div class="score-count" id="score">0</div>/10</div>
+        </div>
+
+        <div class="hint">Nhấn hoặc chạm vào trái tim để gắp. Mỗi trái tim chứa 1 phần của bí mật — phần đó sẽ hiện lên dưới đây. Khi đủ 10 phần, toàn bộ bí mật sẽ xuất hiện!</div>
+
+        <div class="playfield" id="playfield" aria-label="Khu chơi gắp tim"></div>
+
+        <div class="reveal" id="revealArea" aria-live="polite" aria-atomic="true">
+          <!-- hiển thị các phần đã gắp -->
+          <div style="flex:1;color:#8b193f;font-weight:800">Bí mật hé lộ:</div>
+        </div>
+
+      </div>
+
+      <div class="panel">
+        <div class="card">
+          <div style="font-weight:900;color:var(--accent);font-size:18px">Mục tiêu</div>
+          <div style="margin-top:8px">Gắp đủ <strong>10</strong> trái tim để hiện toàn bộ bí mật</div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:900">Điều khiển</div>
+          <div style="margin-top:8px;font-size:14px;color:#6b2b3b">Click hoặc chạm trực tiếp lên trái tim. Có thể nhấn Space để tạo trái tim thử (phím tắt).</div>
+        </div>
+
+        <div class="card" style="text-align:center;">
+          <div style="font-weight:900;color:var(--accent);font-size:16px">Âm thanh</div>
+          <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
+            <button class="btn" id="muteToggle">Tắt nhạc</button>
+            <button class="btn secondary" id="resetBtn">Chơi lại</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- overlay result -->
+      <div class="overlay" id="overlay">
+        <div class="result-card" role="dialog" aria-modal="true">
+          <div class="result-title">Êhhhhh, em đã gắp đủ rồi!</div>
+          <div class="result-text" id="finalMessage">Chúc em 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))</div>
+          <div class="result-actions">
+            <button class="btn" id="closeBtn">Oke anh</button>
+            <button class="btn" id="replayBtn">Không</button>
+          </div>
+        </div>
+      </div>
+
+      <canvas id="fireworks"></canvas>
+
+      <!-- audio: piano bg + pop + collect -->
+      <audio id="bgMusic" loop preload="auto" autoplay="autoplay">
+        <!-- nguồn nhạc piano nhẹ (miễn phí từ pixabay) -->
+        <source src="music/giayngantindai.mp3" type="audio/mp3" />
+      </audio>
+      <audio id="popSound" preload="auto">
+        <source src="music/giayngantindai.mp3" type="audio/mp3" />
+      </audio>
+      <audio id="collectSound" preload="auto">
+        <source src="music/giayngantindai.mp3" type="audio/mp3" />
+      </audio>
+
+    </div>
+  </div>
+
+  <script>
+    /* --- Cấu hình và dữ liệu --- */
+    const PHRASE = "Chúc em 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))";
+    // chia thành 10 phần (mình chuẩn bị 10 token):
+    // Bạn có thể sửa tokens nếu muốn các ký tự khác nhau
+    const TOKENS = ["Chúc"," ","em"," ","20-10"," ","vui"," ","vẻ","💐"]; // 10 phần
+    const TARGET = TOKENS.length;
+
+    const playfield = document.getElementById('playfield');
+    const scoreNode = document.getElementById('score');
+    const revealArea = document.getElementById('revealArea');
+    const overlay = document.getElementById('overlay');
+    const finalMessage = document.getElementById('finalMessage');
+
+    const bgMusic = document.getElementById('bgMusic');
+    const popSound = document.getElementById('popSound');
+    const collectSound = document.getElementById('collectSound');
+
+    const muteToggle = document.getElementById('muteToggle');
+    const resetBtn = document.getElementById('resetBtn');
+    const replayBtn = document.getElementById('replayBtn');
+    const closeBtn = document.getElementById('closeBtn');
+
+    let score = 0;
+    let hearts = [];
+    let spawnTimer = null;
+    let collectedTokens = []; // theo thứ tự gắp
+    const spawnInterval = 700;
+
+    // Utility
+    function r(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    // Tạo trái tim với token (tokenIndex chọn trong TOKENS)
+    function createHeartWithToken(tokenIndex){
+      const token = TOKENS[tokenIndex];
+      const el = document.createElement('div');
+      el.className = 'heart';
+      el.dataset.token = token;
+      el.dataset.index = tokenIndex;
+      const size = r(44,66);
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+
+      // vị trí ngẫu nhiên trong playfield
+      const rect = playfield.getBoundingClientRect();
+      const x = r(40, rect.width - 40);
+      const y = r(rect.height*0.25, rect.height - 40);
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+
+      // gradient heart svg
+      el.innerHTML = `
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g_${Date.now()}_${Math.random()}" x1="0" x2="1">
+              <stop offset="0" stop-color="#ff8ab3"/>
+              <stop offset="1" stop-color="#ff2d7a"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 21s-7-4.35-9-6.72C-0.11 11.3 2.14 6 6.5 6c2.24 0 3.5 1.3 4.5 2.4 1-1.1 2.26-2.4 4.5-2.4 4.36 0 6.61 5.3 3.5 8.28C19 16.65 12 21 12 21z"
+            fill="url(#g_${Date.now()}_${Math.random()})" stroke="#e6a6bf" />
+        </svg>
+        <div class="token">${token}</div>
+      `;
+
+      // nhẹ nhàng di chuyển (transform) để trông sinh động
+      el.style.transition = `transform ${r(3000,5200)}ms cubic-bezier(.2,.9,.3,1), opacity 800ms`;
+      setTimeout(()=>{
+        el.style.transform = `translateX(${r(-120,120)}px) translateY(${r(-40,-180)}px) rotate(${r(-25,25)}deg)`;
+        el.style.opacity = '0.98';
+      }, 80);
+
+      function collect(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if(el.classList.contains('collected')) return;
+        el.classList.add('collected');
+        // âm thanh
+        popSound.currentTime = 0; popSound.play().catch(()=>{});
+        // clone để bay về vùng reveal
+        const from = el.getBoundingClientRect();
+        const targetRect = revealArea.getBoundingClientRect();
+        const clone = el.cloneNode(true);
+        document.body.appendChild(clone);
+        clone.style.position = 'fixed';
+        clone.style.left = from.left + 'px';
+        clone.style.top = from.top + 'px';
+        clone.style.margin = 0;
+        clone.style.zIndex = 9999;
+        clone.style.transition = 'all 700ms cubic-bezier(.2,.9,.2,1)';
+        requestAnimationFrame(()=>{
+          clone.style.left = (targetRect.left + 40 + collectedTokens.length*24) + 'px';
+          clone.style.top = (targetRect.top + targetRect.height/2 - from.height/2) + 'px';
+          clone.style.transform = 'scale(0.45) rotate(20deg)';
+          clone.style.opacity = '0.6';
+        });
+        setTimeout(()=>{ clone.remove(); }, 800);
+
+        // hiển thị token ở reveal area (theo thứ tự gắp)
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.textContent = token;
+        revealArea.appendChild(slot);
+        collectedTokens.push(token);
+        score++; scoreNode.textContent = score;
+        collectSound.currentTime = 0; collectSound.play().catch(()=>{});
+
+        // xóa trái tim thật sau delay
+        setTimeout(()=>{ el.remove(); hearts = hearts.filter(h=>h!==el); }, 220);
+
+        // khi đủ
+        if(score >= TARGET) onComplete();
+      }
+
+      el.addEventListener('click', collect);
+      el.addEventListener('touchstart', collect, {passive:false});
+      playfield.appendChild(el);
+      hearts.push(el);
+
+      // tự hủy nếu không được gắp sau 7-10s
+      setInterval(() => {
+        if (!el.classList.contains('collected')) {
+            el.style.transform = `translateX(${r(-80,80)}px) translateY(${r(-60,60)}px) rotate(${r(-20,20)}deg)`;
+        }
+        }, 4000 + r(0,2000));
+    }
+
+    // Spawn nhiều trái tim, rải tokens ngẫu nhiên để người chơi tìm
+    function startSpawning(){
+      // tạo 10 trái tim (mỗi token một tim), nhưng xuất hiện rải rác theo thời gian
+      let indices = Array.from({length:TOKENS.length}, (_,i)=>i);
+      // trộn mảng để vị trí xuất hiện ngẫu nhiên
+      for (let i=indices.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [indices[i],indices[j]]=[indices[j],indices[i]]; }
+      let i = 0;
+      spawnTimer = setInterval(()=>{
+        if(i >= indices.length){ clearInterval(spawnTimer); spawnTimer = null; return; }
+        // mỗi lần tạo 1 trái tim mang token indices[i]
+        createHeartWithToken(indices[i]);
+        i++;
+      }, 600);
+    }
+
+    function onComplete(){
+      // Dừng spawn (nếu có)
+      if(spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+      // phát nhạc nền nhẹ nhàng
+      bgMusic.currentTime = 0; bgMusic.play().catch(()=>{});
+      // hiển thị overlay với toàn câu chúc
+      finalMessage.textContent = PHRASE;
+      overlay.classList.add('show');
+      // start fireworks
+      startFireworks();
+      // tạo tim bay nền (visual)
+      createFloatingHearts();
+    }
+
+    function resetGame(){
+      // dọn hết trái tim
+      hearts.forEach(h=>h.remove()); hearts = [];
+      // dọn reveal
+      // chỉ giữ tiêu đề trong reveal
+      revealArea.querySelectorAll('.slot').forEach(s=>s.remove());
+      collectedTokens = [];
+      score = 0; scoreNode.textContent = score;
+      // dừng nhạc & pháo
+      stopFireworks();
+      bgMusic.pause(); bgMusic.currentTime = 0;
+      overlay.classList.remove('show');
+      // start spawn lại
+      if(spawnTimer) clearInterval(spawnTimer);
+      startSpawning();
+    }
+
+    // Mute control
+    let muted = false;
+    muteToggle.addEventListener('click', ()=>{
+      muted = !muted;
+      bgMusic.muted = muted; popSound.muted = muted; collectSound.muted = muted;
+      muteToggle.textContent = muted ? 'Bật nhạc' : 'Tắt nhạc';
+    });
+
+    resetBtn.addEventListener('click', resetGame);
+    // replayBtn.addEventListener('click', ()=>{ resetGame(); });
+    let noClickCount = 0;
+
+function showFinalMessage() {
+  const msgBox = document.createElement('div');
+  msgBox.style.position = 'fixed';
+  msgBox.style.left = '50%';
+  msgBox.style.top = '50%';
+  msgBox.style.transform = 'translate(-50%, -50%)';
+  msgBox.style.background = 'rgba(255,255,255,0.95)';
+  msgBox.style.padding = '20px 30px';
+  msgBox.style.borderRadius = '12px';
+  msgBox.style.boxShadow = '0 10px 40px rgba(0,0,0,0.2)';
+  msgBox.style.fontWeight = '800';
+  msgBox.style.color = '#d63384';
+  msgBox.style.fontSize = '20px';
+  msgBox.style.textAlign = 'center';
+  msgBox.textContent = 'Anh biết mà, 5h30 mình oánh với nhau nhé ><';
+  document.body.appendChild(msgBox);
+
+  setTimeout(() => {
+    msgBox.style.transition = 'opacity 1.2s ease';
+    msgBox.style.opacity = '0';
+    setTimeout(() => msgBox.remove(), 1200);
+  }, 3000);
+}
+
+// Khi nhấn “Không”
+replayBtn.addEventListener('click', () => {
+  noClickCount++;
+
+  // hiệu ứng nhỏ dần mỗi lần click
+  replayBtn.style.transform = `scale(${1 - noClickCount * 0.15})`;
+  replayBtn.style.transition = 'transform 0.3s ease';
+
+  if (noClickCount == 3) {
+    // sau 3 lần thì đổi thành Dạ (reset kích thước lại)
+    replayBtn.textContent = 'Dạ';
+    replayBtn.style.transform = 'scale(1)';
+    // noClickCount = 0;
+  }
+  if (replayBtn.textContent === 'Dạ' &&  noClickCount >3) {
+    overlay.classList.remove('show');
+    stopFireworks();
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+    showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
+    startSpawning();
+  }
+
+  
+});
+replayBtn.addEventListener('click', () => {
+  if (replayBtn.textContent === 'Dạ' &&  noClickCount == 0) {
+    overlay.classList.remove('show');
+    stopFireworks();
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+    showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
+    startSpawning();
+  }
+});
+
+// Khi nhấn “Oke anh”
+closeBtn.addEventListener('click', () => {
+  overlay.classList.remove('show');
+  stopFireworks();
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+  showFinalMessage(); // 👉 hiển thị lời nhắn
+  startSpawning();
+});
+
+// Khi nhấn “Dạ” (sau khi nút Không đã đổi)
+
+
+    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks(); bgMusic.pause(); bgMusic.currentTime = 0; startSpawning(); });
+
+    // initial run
+    startSpawning();
+
+    // Support key press to spawn a heart (for fun / test)
+    window.addEventListener('keydown', (e)=>{ if(e.code === 'Space'){ e.preventDefault(); // create a random token heart for testing
+        const unused = [];
+        for(let k=0;k<TOKENS.length;k++){ if(!collectedTokens.includes(TOKENS[k]) && !hearts.some(h=>h.dataset.index==k)) unused.push(k); }
+        if(unused.length>0) createHeartWithToken(unused[Math.floor(Math.random()*unused.length)]);
+    }});
+
+    // Ensure audio can start after user gesture on some mobile browsers
+    ['click','touchstart'].forEach(evt=>{
+      document.addEventListener(evt, ()=>{ try{ if(bgMusic.paused && score>0) bgMusic.play().catch(()=>{}); }catch(e){} }, {once:true});
+    });
+
+    /* --------------- Fireworks (simple canvas particle burst) --------------- */
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = stage.clientWidth, H = canvas.height = stage.clientHeight;
+    window.addEventListener('resize', ()=>{ W = canvas.width = stage.clientWidth; H = canvas.height = stage.clientHeight; });
+
+    const particles = [];
+    let fwInterval = null;
+    function randColor(){ const pool=['#ff4d9a','#ffd166','#ff7ab6','#ffd6e8','#ffd1b3','#9be7ff']; return pool[Math.floor(Math.random()*pool.length)]; }
+
+    function burst(x,y){
+      const hue = randColor();
+      const count = r(18,34);
+      for(let i=0;i<count;i++){
+        particles.push({
+          x,y,
+          velX: (Math.random()-0.5)*6,
+          velY: (Math.random()-0.8)*6 - 2,
+          life: r(40,90),
+          age:0,
+          color: hue,
+          size: Math.random()*3+1
+        });
+      }
+    }
+
+    function startFireworks(){
+      if(fwInterval) return;
+      fwInterval = setInterval(()=>{ burst(r(80,W-80), r(80,H/2)); }, 500);
+      loop();
+    }
+    function stopFireworks(){
+      clearInterval(fwInterval); fwInterval = null;
+    }
+
+    function loop(){
+      ctx.clearRect(0,0,W,H);
+      for(let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.age++; p.x += p.velX; p.y += p.velY; p.velY += 0.06;
+        const alpha = Math.max(0, 1 - p.age/p.life);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+        if(p.age > p.life) particles.splice(i,1);
+      }
+      if(fwInterval) requestAnimationFrame(loop);
+    }
+
+    /* Floating hearts background when completed */
+    function createFloatingHearts(){
+      const N = 12;
+      for(let i=0;i<N;i++){
+        const h = document.createElement('div');
+        h.className = 'heart';
+        h.style.width = '36px'; h.style.height = '36px';
+        h.style.left = r(10, 90) + '%';
+        h.style.top = r(60, 90) + '%';
+        h.style.zIndex = 40;
+        h.style.opacity = '0.95';
+        h.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21s-7-4.35-9-6.72C-0.11 11.3 2.14 6 6.5 6c2.24 0 3.5 1.3 4.5 2.4 1-1.1 2.26-2.4 4.5-2.4 4.36 0 6.61 5.3 3.5 8.28C19 16.65 12 21 12 21z" fill="#ff4d8a" stroke="#e6a6bf"/>
+        </svg>`;
+        document.body.appendChild(h);
+        h.style.transition = `transform ${6000 + r(0,3000)}ms linear, opacity 2000ms`;
+        setTimeout(()=>{ h.style.transform = `translateY(-220px) translateX(${r(-80,80)}px)`; h.style.opacity='0'; }, 80 + i*150);
+        setTimeout(()=>{ h.remove(); }, 7000 + i*200);
+      }
+    }
+
+  </script>
+</body>
+</html>
