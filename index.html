@@ -106,14 +106,13 @@
       <canvas id="fireworks"></canvas>
 
       <!-- audio: piano bg + pop + collect -->
-      <audio id="bgMusic" loop preload="auto" autoplay="autoplay">
-        <!-- nguồn nhạc piano nhẹ (miễn phí từ pixabay) -->
+      <audio id="bgMusic" loop>
         <source src="music/giayngantindai.mp3" type="audio/mp3" />
       </audio>
-      <audio id="popSound" preload="auto">
+      <audio id="popSound">
         <source src="music/giayngantindai.mp3" type="audio/mp3" />
       </audio>
-      <audio id="collectSound" preload="auto">
+      <audio id="collectSound">
         <source src="music/giayngantindai.mp3" type="audio/mp3" />
       </audio>
 
@@ -198,7 +197,7 @@
         if(el.classList.contains('collected')) return;
         el.classList.add('collected');
         // âm thanh
-        popSound.currentTime = 0; popSound.play().catch(()=>{});
+        popSound.currentTime = 0; //popSound.play().catch(()=>{});
         // clone để bay về vùng reveal
         const from = el.getBoundingClientRect();
         const targetRect = revealArea.getBoundingClientRect();
@@ -225,7 +224,7 @@
         revealArea.appendChild(slot);
         collectedTokens.push(token);
         score++; scoreNode.textContent = score;
-        collectSound.currentTime = 0; collectSound.play().catch(()=>{});
+        collectSound.currentTime = 0; //collectSound.play().catch(()=>{});
 
         // xóa trái tim thật sau delay
         setTimeout(()=>{ el.remove(); hearts = hearts.filter(h=>h!==el); }, 220);
@@ -264,14 +263,14 @@
 
     function onComplete(){
       // Dừng spawn (nếu có)
-      if(spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+      if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
       // phát nhạc nền nhẹ nhàng
-      bgMusic.currentTime = 0; bgMusic.play().catch(()=>{});
-      // hiển thị overlay với toàn câu chúc
       finalMessage.textContent = PHRASE;
       overlay.classList.add('show');
+
       // start fireworks
       startFireworks();
+
       // tạo tim bay nền (visual)
       createFloatingHearts();
     }
@@ -346,8 +345,8 @@ replayBtn.addEventListener('click', () => {
   if (replayBtn.textContent === 'Dạ' &&  noClickCount >3) {
     overlay.classList.remove('show');
     stopFireworks();
-    bgMusic.pause();
-    bgMusic.currentTime = 0;
+    //bgMusic.pause();
+    //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
     startSpawning();
   }
@@ -358,8 +357,8 @@ replayBtn.addEventListener('click', () => {
   if (replayBtn.textContent === 'Dạ' &&  noClickCount == 0) {
     overlay.classList.remove('show');
     stopFireworks();
-    bgMusic.pause();
-    bgMusic.currentTime = 0;
+    //bgMusic.pause();
+    //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
     startSpawning();
   }
@@ -369,8 +368,8 @@ replayBtn.addEventListener('click', () => {
 closeBtn.addEventListener('click', () => {
   overlay.classList.remove('show');
   stopFireworks();
-  bgMusic.pause();
-  bgMusic.currentTime = 0;
+  //bgMusic.pause();
+  //bgMusic.currentTime = 0;
   showFinalMessage(); // 👉 hiển thị lời nhắn
   startSpawning();
 });
@@ -378,7 +377,7 @@ closeBtn.addEventListener('click', () => {
 // Khi nhấn “Dạ” (sau khi nút Không đã đổi)
 
 
-    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks(); bgMusic.pause(); bgMusic.currentTime = 0; startSpawning(); });
+    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks();  startSpawning(); });
 
     // initial run
     startSpawning();
@@ -391,9 +390,34 @@ closeBtn.addEventListener('click', () => {
     }});
 
     // Ensure audio can start after user gesture on some mobile browsers
-    ['click','touchstart'].forEach(evt=>{
-      document.addEventListener(evt, ()=>{ try{ if(bgMusic.paused && score>0) bgMusic.play().catch(()=>{}); }catch(e){} }, {once:true});
-    });
+    let musicStarted = false;
+window.addEventListener('load', () => {
+  // tự phát nhạc nền sau 1 chút delay
+  setTimeout(() => {
+    if (!musicStarted) {
+      bgMusic.volume = 0.9;
+      bgMusic.play().then(() => {
+        musicStarted = true;
+      }).catch(() => {
+        // Nếu bị chặn (do chính sách trình duyệt), đợi người dùng ấn nút bất kỳ lần đầu
+        const tryPlay = () => {
+          if (!musicStarted) {
+            bgMusic.play().then(() => {
+              musicStarted = true;
+              document.removeEventListener('click', tryPlay);
+              document.removeEventListener('touchstart', tryPlay);
+            }).catch(()=>{});
+          }
+        };
+        document.addEventListener('click', tryPlay, { once: true });
+        document.addEventListener('touchstart', tryPlay, { once: true });
+      });
+    }
+  }, 800);
+});
+
+// --- Chỉ có thể tắt/bật bằng nút ---
+
 
     /* --------------- Fireworks (simple canvas particle burst) --------------- */
     const canvas = document.getElementById('fireworks');
