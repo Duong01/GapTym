@@ -350,8 +350,8 @@ replayBtn.addEventListener('click', () => {
     //bgMusic.pause();
     //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
-    resetGame();
-    //startSpawning();
+    
+    startSpawning();
   }
 
   
@@ -363,8 +363,8 @@ replayBtn.addEventListener('click', () => {
     //bgMusic.pause();
     //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
-    resetGame();
-    //startSpawning();
+    
+    startSpawning();
   }
 });
 
@@ -375,14 +375,15 @@ closeBtn.addEventListener('click', () => {
   //bgMusic.pause();
   //bgMusic.currentTime = 0;
   showFinalMessage(); // 👉 hiển thị lời nhắn
-  resetGame();
-  //startSpawning();
+  
+  startSpawning();
 });
 
 // Khi nhấn “Dạ” (sau khi nút Không đã đổi)
 
 
     closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks();  startSpawning(); });
+    replayBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks();  startSpawning(); });
 
     // initial run
     startSpawning();
