@@ -400,28 +400,17 @@ closeBtn.addEventListener('click', () => {
     // Ensure audio can start after user gesture on some mobile browsers
     let musicStarted = false;
 window.addEventListener('load', () => {
-  // tự phát nhạc nền sau 1 chút delay
-  setTimeout(() => {
-    if (!musicStarted) {
-      bgMusic.volume = 0.9;
-      bgMusic.play().then(() => {
-        musicStarted = true;
-      }).catch(() => {
-        // Nếu bị chặn (do chính sách trình duyệt), đợi người dùng ấn nút bất kỳ lần đầu
-        const tryPlay = () => {
-          if (!musicStarted) {
-            bgMusic.play().then(() => {
-              musicStarted = true;
-              document.removeEventListener('click', tryPlay);
-              document.removeEventListener('touchstart', tryPlay);
-            }).catch(()=>{});
-          }
-        };
-        document.addEventListener('click', tryPlay, { once: true });
-        document.addEventListener('touchstart', tryPlay, { once: true });
-      });
-    }
-  }, 800);
+  bgMusic.volume = 0.9;
+  bgMusic.play().catch(() => {
+    // nếu bị chặn bởi trình duyệt, sẽ chỉ đợi người dùng click 1 lần duy nhất
+    const tryPlay = () => {
+      bgMusic.play().catch(()=>{});
+      document.removeEventListener('click', tryPlay);
+      document.removeEventListener('touchstart', tryPlay);
+    };
+    document.addEventListener('click', tryPlay, { once: true });
+    document.addEventListener('touchstart', tryPlay, { once: true });
+  });
 });
 
 // --- Chỉ có thể tắt/bật bằng nút ---
