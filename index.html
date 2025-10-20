@@ -264,18 +264,29 @@
     }
 
     function onComplete(){
-      // Dừng spawn (nếu có)
-      if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
-      // phát nhạc nền nhẹ nhàng
-      finalMessage.textContent = PHRASE;
-      overlay.classList.add('show');
+  // Dừng tạo tim mới
+  if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
 
-      // start fireworks
-      startFireworks();
-
-      // tạo tim bay nền (visual)
-      createFloatingHearts();
+  // Ẩn tất cả các tim còn lại (chưa được gắp)
+  hearts.forEach(h => {
+    if (!h.classList.contains('collected')) {
+      h.style.transition = 'opacity 0.6s ease';
+      h.style.opacity = '0';
+      setTimeout(() => h.remove(), 700);
     }
+  });
+
+  // Cập nhật biến danh sách tim
+  hearts = [];
+
+  // Hiển thị kết quả
+  finalMessage.textContent = PHRASE;
+  overlay.classList.add('show');
+
+  // Hiệu ứng pháo hoa + tim bay
+  startFireworks();
+  createFloatingHearts();
+}
 
     function resetGame(){
       // dọn hết trái tim
