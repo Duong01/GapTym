@@ -382,8 +382,10 @@ closeBtn.addEventListener('click', () => {
 // Khi nhấn “Dạ” (sau khi nút Không đã đổi)
 
 
-    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks(); hearts.forEach(h=>h.remove()); hearts = [];startSpawning(); });
+    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks(); hearts.forEach(h=>h.remove()); hearts = []; });
+    replayBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks(); hearts.forEach(h=>h.remove()); hearts = []; });
 
+    
     // initial run
 
     startSpawning();
