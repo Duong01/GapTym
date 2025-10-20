@@ -302,8 +302,8 @@
       muteToggle.textContent = muted ? 'Bật nhạc' : 'Tắt nhạc';
     });
 
-    resetBtn.addEventListener('click', resetGame);
-    // replayBtn.addEventListener('click', ()=>{ resetGame(); });
+    //resetBtn.addEventListener('click', resetGame);
+    resetBtn.addEventListener('click', ()=>{ resetGame(); });
     let noClickCount = 0;
 
 function showFinalMessage() {
@@ -351,7 +351,7 @@ replayBtn.addEventListener('click', () => {
     //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
     
-    startSpawning();
+    //startSpawning();
   }
 
   
@@ -364,7 +364,7 @@ replayBtn.addEventListener('click', () => {
     //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
     
-    startSpawning();
+    //startSpawning();
   }
 });
 
@@ -376,14 +376,13 @@ closeBtn.addEventListener('click', () => {
   //bgMusic.currentTime = 0;
   showFinalMessage(); // 👉 hiển thị lời nhắn
   
-  startSpawning();
+  //startSpawning();
 });
 
 // Khi nhấn “Dạ” (sau khi nút Không đã đổi)
 
 
     closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks();  startSpawning(); });
-    replayBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks();  startSpawning(); });
 
     // initial run
     startSpawning();
