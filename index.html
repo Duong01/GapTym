@@ -95,7 +95,7 @@
       <div class="overlay" id="overlay">
         <div class="result-card" role="dialog" aria-modal="true">
           <div class="result-title">Êhhhhh, em đã gắp đủ rồi!</div>
-          <div class="result-text" id="finalMessage">Chúc em 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))</div>
+          <div class="result-text" id="finalMessage">Chúc em Uyên 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))</div>
           <br/>
           <p style="text-align: center;">----Dương ka----</p>
           <div class="result-actions">
@@ -123,7 +123,7 @@
 
   <script>
     /* --- Cấu hình và dữ liệu --- */
-    const PHRASE = "Chúc em 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))";
+    const PHRASE = "Chúc em Uyên 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))";
     // chia thành 10 phần (mình chuẩn bị 10 token):
     // Bạn có thể sửa tokens nếu muốn các ký tự khác nhau
     const TOKENS = ["Chúc"," ","em"," ","20-10"," ","vui"," ","vẻ","💐"]; // 10 phần
@@ -452,7 +452,7 @@ window.addEventListener('load', () => {
 
     function startFireworks(){
       if(fwInterval) return;
-      fwInterval = setInterval(()=>{ burst(r(80,W-80), r(80,H/2)); }, 500);
+      fwInterval = setInterval(()=>{ burst(r(80,W-80), r(80,H/2)); }, 2000);
       loop();
     }
     function stopFireworks(){
