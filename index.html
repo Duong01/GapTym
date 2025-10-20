@@ -350,8 +350,8 @@ replayBtn.addEventListener('click', () => {
     //bgMusic.pause();
     //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
-    
-    //startSpawning();
+    hearts.forEach(h=>h.remove()); hearts = [];
+    startSpawning();
   }
 
   
@@ -363,8 +363,8 @@ replayBtn.addEventListener('click', () => {
     //bgMusic.pause();
     //bgMusic.currentTime = 0;
     showFinalMessage(); // 👉 chỉ hiển thị khi click vào “Dạ”
-    
-    //startSpawning();
+    hearts.forEach(h=>h.remove()); hearts = [];
+    startSpawning();
   }
 });
 
@@ -375,14 +375,14 @@ closeBtn.addEventListener('click', () => {
   //bgMusic.pause();
   //bgMusic.currentTime = 0;
   showFinalMessage(); // 👉 hiển thị lời nhắn
-  
-  //startSpawning();
+  hearts.forEach(h=>h.remove()); hearts = [];
+  startSpawning();
 });
 
 // Khi nhấn “Dạ” (sau khi nút Không đã đổi)
 
 
-    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks();  });
+    closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); stopFireworks(); hearts.forEach(h=>h.remove()); hearts = [];startSpawning(); });
 
     // initial run
 
