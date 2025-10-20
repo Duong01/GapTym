@@ -95,7 +95,7 @@
       <div class="overlay" id="overlay">
         <div class="result-card" role="dialog" aria-modal="true">
           <div class="result-title">Êhhhhh, em đã gắp đủ rồi!</div>
-          <div class="result-text" id="finalMessage">Chúc em Uyên 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))</div>
+          <div class="result-text" id="finalMessage">Chúc em 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))</div>
           <br/>
           <p style="text-align: center;">----Dương ka----</p>
           <div class="result-actions">
@@ -123,7 +123,7 @@
 
   <script>
     /* --- Cấu hình và dữ liệu --- */
-    const PHRASE = "Chúc em Uyên 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))";
+    const PHRASE = "Chúc em 20-10 vui vẻ, luôn xinh đẹp và chiều nay oánh cầu cùng anh nhé :)))";
     // chia thành 10 phần (mình chuẩn bị 10 token):
     // Bạn có thể sửa tokens nếu muốn các ký tự khác nhau
     const TOKENS = ["Chúc"," ","em"," ","20-10"," ","vui"," ","vẻ","💐"]; // 10 phần
@@ -272,7 +272,7 @@
 
       // start fireworks
       startFireworks();
-
+      hearts.forEach(h=>h.remove()); hearts = [];
       // tạo tim bay nền (visual)
       createFloatingHearts();
     }
@@ -327,7 +327,7 @@ function showFinalMessage() {
     msgBox.style.transition = 'opacity 1.2s ease';
     msgBox.style.opacity = '0';
     setTimeout(() => msgBox.remove(), 1200);
-  }, 3000);
+  }, 30000);
 }
 
 // Khi nhấn “Không”
