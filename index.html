@@ -233,25 +233,6 @@
 
         // khi đủ
         if(score >= TARGET) onComplete();
-        // Nếu đã đủ tim thì không làm gì nữa
-  if (score >= TARGET) return;
-
-  const heart = ev.target;
-  if (heart.classList.contains('collected')) return;
-
-  heart.classList.add('collected');
-  heart.style.transform = 'scale(2)';
-  heart.style.opacity = '0';
-  setTimeout(() => heart.remove(), 300);
-
-  score++;
-  updateScore();
-
-  // Nếu đủ tim, gọi hoàn thành
-  if (score >= TARGET) {
-    onComplete();
-  }
-        
       }
 
       el.addEventListener('click', collect);
@@ -282,39 +263,19 @@
       }, 600);
     }
 
-    // function onComplete(){
-    //   // Dừng spawn (nếu có)
-    //   if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
-    //   // phát nhạc nền nhẹ nhàng
-    //   finalMessage.textContent = PHRASE;
-    //   overlay.classList.add('show');
+    function onComplete(){
+      // Dừng spawn (nếu có)
+      if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+      // phát nhạc nền nhẹ nhàng
+      finalMessage.textContent = PHRASE;
+      overlay.classList.add('show');
 
-    //   // start fireworks
-    //   startFireworks();
+      // start fireworks
+      startFireworks();
 
-    //   // tạo tim bay nền (visual)
-    //   createFloatingHearts();
-    // }
-    function onComplete() {
-  // Dừng tạo tim mới
-  if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
-
-  // Ẩn toàn bộ tim còn lại
-  hearts.forEach(h => {
-    h.style.transition = 'opacity 0.5s ease';
-    h.style.opacity = '0';
-    setTimeout(() => h.remove(), 500);
-  });
-  hearts = [];
-
-  // Hiển thị overlay chúc mừng
-  finalMessage.textContent = PHRASE;
-  overlay.classList.add('show');
-
-  // Hiệu ứng chúc mừng
-  startFireworks();
-  createFloatingHearts();
-}
+      // tạo tim bay nền (visual)
+      createFloatingHearts();
+    }
 
     function resetGame(){
       // dọn hết trái tim
